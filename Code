@@ -1,0 +1,271 @@
+# Final-Exam-CSIT
+Final Project 
+f//HTTP GET product/read.php
+<?php
+header("Content-Type: application/json; charset=UTF-8");
+
+include_once '../config/dbclass.php';
+include_once '../entities/product.php';
+
+$dbclass = new DBClass();
+$connection = $dbclass->getConnection();
+
+$product = new Product($connection);
+
+$stmt = $product->read();
+$count = $stmt->rowCount();
+
+if($count > 0){
+
+
+    $products = array();
+    $products["body"] = array();
+    $products["count"] = $count;
+
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+
+        extract($row);
+
+        $p  = array(
+              "id" => $id,
+              "barcode" => $barcode,
+              "name" => $name,
+              "price" => $price,
+              "location" => $location,
+              "quantity" => $quantity,
+              "location_id" => $location_id
+        );
+
+        array_push($products["body"], $p);
+    }
+
+    echo json_encode($products);
+}
+
+else {
+
+    echo json_encode(
+        array("body" => array(), "count" => 0);
+    );
+}
+?>
+
+//HTTP POST API product/create.php
+<?php
+
+header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Max-Age: 3600");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+include_once '../config/dbclass.php';
+
+include_once '../entities/product.php';
+
+$dbclass = new DBClass();
+$connection = $dbclass->getConnection();
+
+$product = new Product($connection);
+
+$data = json_decode(file_get_contents("php://input"));
+
+$product->barcode = $data->barcode;
+$product->name = $data->name;
+$product->price = $data->price;
+$product->quantity = $data->quantity;
+$product->location_id = $data->location_id;
+
+
+if($product->create()){
+    echo '{';
+        echo '"message": "Product created."';
+    echo '}';
+}
+else{
+    echo '{';
+        echo '"message": "Not able to create product."';
+    echo '}';
+}
+?>
+//HTTP GET store/read.php
+<?php
+header("Content-Type: application/json; charset=UTF-8");
+
+include_once '../config/dbclass.php';
+include_once '../entities/store.php';
+
+$dbclass = new DBClass();
+$connection = $dbclass->getConnection();
+
+$product = new Store($connection);
+
+$stmt = $store->read();
+$count = $stmt->rowCount();
+
+if($count > 0){
+
+
+    $stores = array();
+    $stores["body"] = array();
+    $stores["count"] = $count;
+
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+
+        extract($row);
+
+        $p  = array(
+              "id" => $id,
+              "name" => $name,
+              "location_id" => $location_id
+              "product_id" => $product_id
+        );
+
+        array_push($stores["body"], $p);
+    }
+
+    echo json_encode($stores);
+}
+
+else {
+
+    echo json_encode(
+        array("body" => array(), "count" => 0);
+    );
+}
+?>
+//HTTP POST API store/create.php
+<?php
+
+header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Max-Age: 3600");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+include_once '../config/dbclass.php';
+
+include_once '../entities/store.php';
+
+$dbclass = new DBClass();
+$connection = $dbclass->getConnection();
+
+$product = new Store($connection);
+
+$data = json_decode(file_get_contents("php://input"));
+
+$store->name = $data->name;
+$store->location_id = $data->location_id;
+$store->product_id = $data->product_id;
+
+if($store->create()){
+    echo '{';
+        echo '"message": "Store was added."';
+    echo '}';
+}
+else{
+    echo '{';
+        echo '"message": "Unable to add store."';
+    echo '}';
+}
+?>
+
+//HTTP GET location/read.php
+<?php
+header("Content-Type: application/json; charset=UTF-8");
+
+include_once '../config/dbclass.php';
+include_once '../entities/location.php';
+
+$dbclass = new DBClass();
+$connection = $dbclass->getConnection();
+
+$product = new Product($connection);
+
+$stmt = $product->read();
+$count = $stmt->rowCount();
+
+if($count > 0){
+
+
+    $locations = array();
+    $locations["body"] = array();
+    $locations["count"] = $count;
+
+
+
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+
+        extract($row);
+
+        $p  = array(
+              "id" => $id,
+              "name" => $name,
+              "state" => $state,
+              "store_id" => $store_id,
+              "product_id" => $product_id
+        );
+
+        array_push($locations["body"], $p);
+    }
+
+    echo json_encode($locations);
+}
+
+else {
+
+    echo json_encode(
+        array("body" => array(), "count" => 0);
+    );
+}
+?>
+
+//HTTP POST API location/create.php
+<?php
+
+header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Max-Age: 3600");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+include_once '../config/dbclass.php';
+
+include_once '../entities/location.php';
+
+$dbclass = new DBClass();
+$connection = $dbclass->getConnection();
+
+$product = new Location($connection);
+
+$data = json_decode(file_get_contents("php://input"));
+
+$location->name = $data->name;
+$location->state = $data->state;
+$location->store_id = $data->store_id;
+$location->product_id = $data->product_id;
+
+--------------
+CREATE TABLE `Product` (
+  `id` int(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `barcode` varchar(255),
+  `name` varchar(100),
+  `price` float,
+  `quantity` float,
+  `locationid` int(11) NOT NULL
+);
+CREATE TABLE `Store` (
+  `id` int(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(100),
+  `locationid` int(11) NOT NULL
+  `productid` int(11) NOT NULL
+);
+CREATE TABLE `Location` (
+  `id` int(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `name` varchar(100),
+  `state` varchar(100)
+  `storeid` int(11) NOT NULL
+  `productid` int(11) NOT NULL
+);
+
+CREATE DATABASE mydb;
+
+use mydb;
+
